@@ -5,6 +5,10 @@ const mapTools = require('./map');
 const { governanceStep } = require('./governance');
 
 const SYLLABLES = ['ba', 'lo', 'ri', 'ka', 'mo', 'ten', 'ver', 'su', 'pe', 'han', 'ol', 'dri'];
+// M8 food balance, in food stock per resident. Below LOW, hungry residents go to
+// the fields instead of the market. Above HIGH, fed residents rest instead of farming.
+const FOOD_LOW = 0.6;
+const FOOD_HIGH = 3;
 
 function makeName(rng) {
   const parts = 2 + Math.floor(rng() * 2);
@@ -115,17 +119,19 @@ function step(town) {
     const r = town.residents.get(id);
     if (r.plan) continue;
     let action;
+    const food = town.stock.food;
+    const residents = town.residents.size;
     if (r.needs.food < 0.3) {
-      // Hungry and the market is empty: go to the fields to grow food instead.
-      if (town.stock.food >= 1) action = 'eat';
-      else {
-        recordEvent(town, 'scarcity', [id], { resident: id, food_stock: Number(town.stock.food.toFixed(2)) });
-        action = 'work';
-      }
+      // Hungry. When the stock is low, go to the fields to grow food instead of
+      // walking to an empty market. An empty market is a scarcity event.
+      if (food < FOOD_LOW * residents) action = 'work';
+      else action = 'eat';
+      if (food < 1) recordEvent(town, 'scarcity', [id], { resident: id, food_stock: Number(food.toFixed(2)) });
     }
     else if (r.needs.rest < 0.3) action = 'rest';
     else if (r.needs.social < 0.4) action = 'socialize';
     else if (rng() < 0.2) action = 'gossip';
+    else if (food > FOOD_HIGH * residents) action = 'rest'; // plenty in the stores: no need to farm
     else action = 'work';
 
     const target = {
@@ -205,7 +211,10 @@ function step(town) {
     } else if (action === 'rest') {
       r.needs.rest = clamp(r.needs.rest + 0.4);
     } else if (action === 'work') {
-      town.stock.food += 4 + r.traits.sociability * 0.5;
+      // The harvest shrinks as the stores fill, so walks already under way
+      // do not overshoot the high-water mark.
+      const fill = Math.max(0, 1 - town.stock.food / (FOOD_HIGH * town.residents.size));
+      town.stock.food += (4 + r.traits.sociability * 0.5) * fill;
     } else if (action === 'gossip') {
       // Gossip: pass a rumor about a random third resident to a friend.
       const friends = town.gossip.get(id);

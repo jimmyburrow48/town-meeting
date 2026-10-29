@@ -73,5 +73,5 @@ node build-bundle.js   # writes site/sim.bundle.js from the headless modules
 
 ## what is not done yet
 
-- the food stock swings a lot between boom and bust in some towns. it is a known balance issue, not a bug.
+- most residents are hungry most of the time. the stock now stays in a band (about 40 to 340 after the first 50 ticks), but the market walk is the real bottleneck, so the town is always a bit short of food. a fix would shorten the walk or slow the hunger.
 - the friends weight was picked by a sweep over 24 seeds (0.1, 0.15, 0.25, 0.5). 0.15 keeps a real friends effect without locking in lopsided votes. a bigger sample could move it.
