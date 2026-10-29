@@ -238,21 +238,26 @@ const ORDINANCES = [
   },
 ];
 
-// Fixed taste in -1..1 for one resident and one ordinance. It is derived from the
-// town seed, the resident id and the ordinance key, so it never changes between
-// votes and it does not use up the main rng stream.
-function taste(town, id, key) {
+// A keyed draw in 0..1: derived from the town seed, a resident id (-1 for the town)
+// and a text key, so the same key always gives the same number and it does not use
+// up the main rng stream. Two configs of one town get the same draws for the same decision.
+function keyedDraw(town, id, key) {
   let h = 0;
   for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 0x01000193);
   const rng = seededRandom((town.seed ^ Math.imul(id + 1, 0x9e3779b1) ^ h) >>> 0);
-  return rng() * 2 - 1;
+  return rng();
+}
+
+// Fixed taste in -1..1 for one resident and one ordinance. It never changes between votes.
+function taste(town, id, key) {
+  return keyedDraw(town, id, key) * 2 - 1;
 }
 
 // record(type, actors, effects, causeEventId) appends an event and returns its id.
 function governanceStep(town, record) {
   if (town.tick < FIRST_PROPOSAL || (town.tick - FIRST_PROPOSAL) % PERIOD !== 0) return;
-  const rng = town.rng;
-  const ord = ORDINANCES[Math.floor(rng() * ORDINANCES.length)];
+  // The proposal and each resident's noise are keyed by the tick, so two configs vote on the same proposal with the same noise.
+  const ord = ORDINANCES[Math.floor(keyedDraw(town, -1, `proposal:${town.tick}`) * ORDINANCES.length)];
   const proposalId = record('proposal', [], { ordinance: ord.key, title: ord.title });
 
   // Everyone votes from the same snapshot of last votes, so order does not matter.
@@ -268,7 +273,7 @@ function governanceStep(town, record) {
       self: W_SELF * ord.lean(r),
       taste: W_TASTE * taste(town, id, ord.key),
       social: W_SOCIAL * social,
-      noise: (rng() - 0.5) * NOISE,
+      noise: (keyedDraw(town, id, `noise:${town.tick}:${ord.key}`) - 0.5) * NOISE,
     };
     const score = parts.self + parts.taste + parts.social + parts.noise;
     votes.set(id, score > 0);

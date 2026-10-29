@@ -1,8 +1,8 @@
 // M10 check: the divergence finder must tell the truth about the friends term.
 // Run with: node check-divergence.js
-// Part 1 is a scripted fixture: one festival vote (rng fixed so the ordinance is "festival" and the noise is 0),
+// Part 1 is a scripted fixture: one vote at tick 30 (the ordinance and each noise draw are keyed, so they are the same in both runs),
 // run twice on the same town. In run A every friend voted yes last time; in run B every friend voted no.
-// With need fit 0 and noise 0, a resident's score is 0.4 * taste + W_SOCIAL (A) or 0.4 * taste - W_SOCIAL (B).
+// Need fit is 0 for every ordinance, so a resident's score is 0.4 * taste + noise + W_SOCIAL (A) or 0.4 * taste + noise - W_SOCIAL (B).
 // Part 2 runs divergence.js for real on the seed in the README and checks its report.
 const assert = require('assert');
 const fs = require('fs');
@@ -17,9 +17,9 @@ const SEED = 20261028;
 function festivalVote(friendsVoted) {
   const town = createTown(SEED);
   town.tick = 30;               // the first proposal tick
-  town.rng = () => 0.5;         // ordinance index 2 (festival), noise 0
   for (const r of town.residents.values()) {
-    r.traits.sociability = 0.5; // lean 0, so the need term is 0
+    // lean 0 for every ordinance (well, tax, festival, curfew), so the need term is 0 whichever one is proposed
+    r.needs.food = 0.6; r.needs.rest = 0.6; r.traits.honesty = 0.5; r.traits.sociability = 0.5;
     r.lastVote = friendsVoted;
   }
   const events = [];
@@ -45,9 +45,9 @@ assert.strictEqual(A.vote.effects.yes - B.vote.effects.yes, flipped, 'yes-count 
 // The flip counts record which residents the friends term decided: they add up to the same flipped residents.
 assert.strictEqual(A.vote.effects.flips.social + B.vote.effects.flips.social, flipped,
   'flips.social of both runs add up to the residents the friends term decided');
-// With need 0 and noise 0, removing those terms can never change a vote.
+// With need 0, removing the self term can never change a vote.
 assert.strictEqual(A.vote.effects.flips.self, 0, 'self term is zero here, so it flips nobody');
-assert.strictEqual(A.vote.effects.flips.noise, 0, 'noise is zero here, so it flips nobody');
+// Noise is keyed and the same in A and B, so it can flip residents on its own but never explains the gap between them.
 
 // 2. Honest no-difference case: when no friend has voted, the friends term is zero and changes nothing.
 const N = festivalVote(null);
@@ -55,15 +55,16 @@ assert.strictEqual(N.vote.effects.flips.social, 0, 'no friend votes: the friends
 
 // 3. Real runs: the finder's report for the README seed.
 const out = execFileSync(process.execPath, [path.join(__dirname, 'divergence.js'), String(SEED)]).toString();
-assert.ok(out.includes('first ballot change: tick 90, "festival"'), 'first ballot change on the README seed is tick 90 festival');
-assert.ok(out.includes('friends on: 85 yes, 65 no (passes); friends off: 64 yes, 86 no (fails)'), 'tallies on the README seed');
-assert.ok(out.includes('first outcome change: vote 1 at tick 90'), 'first outcome change on the README seed');
+assert.ok(out.includes('first ballot change: tick 90, "festival", 9 resident(s) vote differently'), 'first ballot change on the README seed is tick 90 festival, 9 residents');
+assert.ok(out.includes('friends on: 70 yes, 80 no (fails); friends off: 73 yes, 77 no (fails)'), 'tallies at tick 90 on the README seed: same fail either way');
+assert.ok(out.includes('first outcome change: vote 4 at tick 270'), 'first outcome change on the README seed is vote 4 at tick 270 (keyed noise)');
 const again = execFileSync(process.execPath, [path.join(__dirname, 'divergence.js'), String(SEED)]).toString();
 assert.strictEqual(again, out, 'the finder is deterministic');
 
-// 4. The page card quotes the same numbers (its 113-of-200 line comes from the batch run: TM_SEEDS=200 node divergence.js).
+// 4. The page card quotes the same numbers (its 105-of-200 line comes from the batch run: TM_SEEDS=200 node divergence.js).
+// The tick 270 pair is from the child runs (TM_W_SOCIAL 0.15 and 0 on the README seed, ballots compared per vote).
 const page = fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf8');
-for (const s of ['85 yes, 65 no', '64 yes, 86 no', '21 residents vote differently', '113 of 200 seeds']) {
+for (const s of ['83 yes, 67 no', '69 yes, 81 no', '14 residents vote differently', '105 of 200 seeds']) {
   assert.ok(page.includes(s), `page card quotes "${s}"`);
 }
 

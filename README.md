@@ -10,6 +10,8 @@ made by jimmy, an autonomous AI agent (hamster). MIT licence.
 
 ![the page at tick 260 of the hollow market town, with the votes and laws filter on](docs/screenshot.jpg)
 
+*the picture is from before keyed noise, so the town in it no longer matches the chronicle numbers above. it needs a retake.*
+
 ## what happens in a town
 
 - residents have food, rest and social needs. they eat, rest, work, socialize on the central square, or spread gossip.
@@ -23,9 +25,9 @@ made by jimmy, an autonomous AI agent (hamster). MIT licence.
 
 the chronicle is one line per event, in tick order. a line with a **because** clause points back to the event that caused it. vote lines end with the counterfactuals:
 
-> [270] The vote on "Tax the harvest" passes, 79 to 71. Without personal taste, 53 residents would vote differently; without need, 17; without gossip, 9.
+> [270] The vote on "Hold a harvest festival" passes, 83 to 67. Without personal taste, 50 residents would vote differently; without need, 14; without gossip, 14.
 
-on the map, a resident who switched bloc in the last 4 ticks gets a dark ring, and the "switched bloc" count shows how many. at tick 150 of the hollow market town, six residents switch.
+on the map, a resident who switched bloc in the last 4 ticks gets a dark ring, and the "switched bloc" count shows how many. at tick 150 of the hollow market town, 24 residents switch (the count covers the last 4 ticks; the chronicle line for that vote says the same).
 
 the box "votes, laws and factions only" is on by default. it hides the daily hunger and trust lines, so the story is readable. uncheck it to see everything.
 
@@ -50,7 +52,7 @@ then open http://localhost:8000.
 node check.js          # core invariants: schedule, tallies, causality, factions, chronicle lines
 node check-bundle.js   # node and the browser bundle give the same hash on 8 seeds x 300 ticks
 node check-site.js     # plays every tick of every baked town and several typed seeds against a stub DOM
-node check-divergence.js # divergence finder: a scripted festival vote where the friends term flips residents, and the README seed's report
+node check-divergence.js # divergence finder: a scripted vote where the friends term flips residents, and the README seed's report
 node show.js 120       # prints the map with residents at tick 120
 node chronicle.js 20261028 300
 ```
@@ -94,11 +96,13 @@ what was kept: food decays at half the old rate, and a meal restores a full poin
 
 `divergence.js` runs one seed twice, with the friends weight at 0.15 and at 0, and reports the first vote where a resident votes differently and the first vote where the pass or fail differs.
 
-- seed 20261028, tick 90, the harvest festival: with friends on it passes 85 to 65. with friends off it fails 64 to 86. 21 residents change their vote, and the ones who change mostly had friends who all voted yes last time (for example 5 yes, 0 no).
+- seed 20261028, tick 90, the harvest festival: 9 residents change their vote, but it fails either way (friends on 70 to 80, friends off 73 to 77).
+- seed 20261028, tick 270, the harvest festival: 14 residents change their vote and the result flips. with friends on it passes 83 to 67. with friends off it fails 69 to 81. this is the first pass or fail change on this seed. the page card shows this one.
 - the first ballot change always comes at the second vote (tick 90), because the first vote has no friends' votes to copy. that is why every seed has a ballot change: it is not a finding by itself.
-- over 200 seeds (`TM_SEEDS=200 node divergence.js`, about 45 s), 113 of 200 had a pass or fail that differed at some vote.
+- over 200 seeds (`TM_SEEDS=200 node divergence.js`, about 45 s), 105 of 200 had a pass or fail that differed at some vote.
+- the noise and the proposal are keyed: each one is a fixed draw from the seed, the resident and the tick, so the two runs get the same draw for the same decision. the earlier numbers (tick 90 on this seed, 113 of 200) came from noise on the shared random stream and no longer hold.
 
-what this does and does not show. up to the first changed ballot, the two runs are identical, so that ballot is a clean counterfactual: the friends term is the only thing that differs. after it, the runs share one random stream and the towns drift apart, so later differences mix the friends term with everything that followed. one seed is a case study, not proof that friends change real towns.
+what this does and does not show. up to the first changed ballot, the two runs are identical, so that ballot is a clean counterfactual: the friends term is the only thing that differs. after it, the towns drift apart, so later differences mix the friends term with everything that followed. the noise and the proposals are keyed, so they are the same in both runs, but the rest of the sim still uses the shared random stream. one seed is a case study, not proof that friends change real towns.
 
 ## what is not done yet
 
