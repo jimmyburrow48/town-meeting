@@ -50,6 +50,7 @@ then open http://localhost:8000.
 node check.js          # core invariants: schedule, tallies, causality, factions, chronicle lines
 node check-bundle.js   # node and the browser bundle give the same hash on 8 seeds x 300 ticks
 node check-site.js     # plays every tick of every baked town and several typed seeds against a stub DOM
+node check-divergence.js # divergence finder: a scripted festival vote where the friends term flips residents, and the README seed's report
 node show.js 120       # prints the map with residents at tick 120
 node chronicle.js 20261028 300
 ```
