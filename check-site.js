@@ -40,10 +40,13 @@ let fills = 0;
 let arcs = 0;
 const ctx = {
   fillStyle: '',
+  strokeStyle: '',
+  lineWidth: 1,
   fillRect() { fills++; },
   beginPath() {},
   arc() { arcs++; },
   fill() {},
+  stroke() {},
 };
 
 const els = {};
@@ -82,6 +85,19 @@ vm.runInContext(fs.readFileSync(path.join(siteDir, 'app.js'), 'utf8'), sandbox);
 // The story types the page shows when the filter is on (the page keeps the same list).
 const STORY = new Set(['proposal', 'vote_result', 'ordinance_passed', 'faction_formed', 'faction_shift']);
 
+// Independent count of residents who switched bloc in the last `window` ticks up to tick t (Yea to Nay or back).
+function switchedAt(town, t, window = 4) {
+  const moved = new Set();
+  for (let k = 0; k < window && t - k >= 1; k++) {
+    const now = town.frames[t - k].f;
+    const before = town.frames[t - k - 1].f;
+    for (let i = 0; i < now.length; i++) {
+      if (now[i] !== before[i] && now[i] !== '0' && before[i] !== '0') moved.add(i);
+    }
+  }
+  return moved.size;
+}
+
 // Play every tick of a town through the scrubber, and check the stats, food, tick label and chronicle.
 // storyOnly: the chronicle filter is on (the page default) or off.
 function checkTown(town, label, storyOnly = true) {
@@ -99,6 +115,7 @@ function checkTown(town, label, storyOnly = true) {
     assert.strictEqual(els.yea.textContent, String(yea), `yea count at tick ${t} of ${label}`);
     assert.strictEqual(els.nay.textContent, String(nay), `nay count at tick ${t} of ${label}`);
     assert.strictEqual(els.food.textContent, String(f.food), `food at tick ${t} of ${label}`);
+    assert.strictEqual(els.flips.textContent, String(switchedAt(town, t)), `switched bloc at tick ${t} of ${label}`);
     assert.strictEqual(els.tick.textContent, `tick ${t} of ${json.ticks}`, 'tick label');
   }
   // The chronicle at the last tick shows the newest 60 events (story types only when the filter is on), newest first.
@@ -133,6 +150,17 @@ function checkTown(town, label, storyOnly = true) {
     select.listeners.change({ target: select });
     checkTown(json.towns[ti], json.towns[ti].name);
   }
+
+  // M7: every bloc switch shows on the map. Each faction_shift event has residents ringed on its tick, and the ring count matches a recount.
+  let shiftEvents = 0;
+  for (const town of json.towns) {
+    for (const e of town.events) {
+      if (e.type !== 'faction_shift') continue;
+      shiftEvents++;
+      assert.ok(switchedAt(town, e.tick) > 0, `faction_shift at tick ${e.tick} of ${town.name} ringed on the map`);
+    }
+  }
+  assert.ok(shiftEvents > 0, 'the baked towns have bloc switches to ring');
 
   // M6 story filter off: every event shows, hunger and trust included.
   select.value = '0';
@@ -193,7 +221,7 @@ function checkTown(town, label, storyOnly = true) {
   // Positions are drawn: every resident once per frame, plus the grid fill.
   assert.ok(arcs >= json.towns.length * (json.ticks + 1) * 150, 'every resident is drawn at every tick');
   assert.ok(fills > 0, 'the map is drawn');
-  console.log(`M5 and M6 site checks passed: ${json.towns.length} baked towns and 5 typed seeds, every tick each, ${arcs} resident dots drawn, ${fills} tiles.`);
+  console.log(`M5, M6 and M7 site checks passed: ${json.towns.length} baked towns and 5 typed seeds, every tick each, ${arcs} resident dots drawn, ${fills} tiles.`);
 })().catch((err) => {
   console.error('site check FAILED:', err.message);
   process.exit(1);

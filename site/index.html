@@ -23,6 +23,7 @@
   .stats b { font-size: 18px; }
   .legend { display: flex; gap: 14px; margin-top: 8px; font-size: 13px; color: var(--muted); }
   .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .dot.ring { background: transparent; border: 2px solid var(--ink); box-sizing: border-box; }
   h2 { margin: 0 0 8px; font-size: 18px; }
   #log { list-style: none; margin: 0; padding: 0; max-height: 620px; overflow-y: auto; }
   #log li { padding: 7px 0; border-bottom: 1px dashed var(--line); line-height: 1.4; font-size: 15px; }
@@ -62,11 +63,13 @@
       <span>Food <b id="food">0</b></span>
       <span>Yea <b id="yea">0</b></span>
       <span>Nay <b id="nay">0</b></span>
+      <span>Switched bloc <b id="flips">0</b></span>
     </div>
     <div class="legend">
       <span><i class="dot" style="background: var(--yea)"></i>Yea bloc</span>
       <span><i class="dot" style="background: var(--nay)"></i>Nay bloc</span>
       <span><i class="dot" style="background: var(--none)"></i>no bloc yet</span>
+      <span><i class="dot ring"></i>switched bloc in the last 4 ticks</span>
     </div>
   </section>
   <section class="card">

@@ -21,7 +21,8 @@
   const scrub = document.getElementById('scrub');
   const tickLabel = document.getElementById('tick');
   const log = document.getElementById('log');
-  const el = { food: document.getElementById('food'), yea: document.getElementById('yea'), nay: document.getElementById('nay') };
+  const el = { food: document.getElementById('food'), yea: document.getElementById('yea'), nay: document.getElementById('nay'), flips: document.getElementById('flips') };
+  const FLIP_WINDOW = 4; // ticks a resident who switched bloc stays ringed on the map
 
   let data = null;
   let town = null;
@@ -37,7 +38,20 @@
     return [a * 0.6, b * 0.6];
   }
 
-  function drawMap() {
+  // Which residents switched bloc in the last FLIP_WINDOW ticks (Yea to Nay or back). The first bloc (none to a bloc) is not a switch.
+  function switchedNow() {
+    const flags = new Array(town.residents).fill(false);
+    for (let k = 0; k < FLIP_WINDOW && tick - k >= 1; k++) {
+      const now = data.frames[tick - k].f;
+      const before = data.frames[tick - k - 1].f;
+      for (let i = 0; i < town.residents; i++) {
+        if (now[i] !== before[i] && now[i] !== '0' && before[i] !== '0') flags[i] = true;
+      }
+    }
+    return flags;
+  }
+
+  function drawMap(flags) {
     const rows = town.map;
     const w = rows[0].length;
     const h = rows.length;
@@ -60,9 +74,19 @@
       ctx.arc((x + 0.5 + ox) * CELL, (y + 0.5 + oy) * CELL, CELL * 0.22, 0, Math.PI * 2);
       ctx.fill();
     }
+    // Rings go on top of the dots, so a resident who just changed bloc stands out.
+    ctx.strokeStyle = '#2d2620';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < town.residents; i++) {
+      if (!flags[i]) continue;
+      const [ox, oy] = offset(i);
+      ctx.beginPath();
+      ctx.arc((f.p[i * 2] + 0.5 + ox) * CELL, (f.p[i * 2 + 1] + 0.5 + oy) * CELL, CELL * 0.34, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
 
-  function drawStats() {
+  function drawStats(flags) {
     const f = data.frames[tick];
     let yea = 0;
     let nay = 0;
@@ -73,6 +97,7 @@
     el.food.textContent = f.food;
     el.yea.textContent = yea;
     el.nay.textContent = nay;
+    el.flips.textContent = flags.filter(Boolean).length;
     tickLabel.textContent = `tick ${tick} of ${data.ticks}`;
     scrub.value = tick;
   }
@@ -108,8 +133,9 @@
   }
 
   function render() {
-    drawMap();
-    drawStats();
+    const flags = switchedNow();
+    drawMap(flags);
+    drawStats(flags);
     drawLog();
   }
 
