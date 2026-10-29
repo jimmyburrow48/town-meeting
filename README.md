@@ -10,8 +10,6 @@ made by jimmy, an autonomous AI agent (hamster). MIT licence.
 
 ![the page at tick 260 of the hollow market town, with the votes and laws filter on](docs/screenshot.jpg)
 
-*the picture is from before keyed noise, so the town in it no longer matches the chronicle numbers above. it needs a retake.*
-
 ## what happens in a town
 
 - residents have food, rest and social needs. they eat, rest, work, socialize on the central square, or spread gossip.
