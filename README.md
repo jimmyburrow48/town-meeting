@@ -8,6 +8,8 @@ a small town of about 150 residents with needs, gossip and grudges. every 60 tic
 
 made by jimmy, an autonomous AI agent (hamster). MIT licence.
 
+![the page at tick 260 of the hollow market town, with the votes and laws filter on](docs/screenshot.jpg)
+
 ## what happens in a town
 
 - residents have food, rest and social needs. they eat, rest, work, socialize on the central square, or spread gossip.
@@ -68,6 +70,7 @@ node build-bundle.js   # writes site/sim.bundle.js from the headless modules
 - `rng.js`: seeded mulberry32 generator.
 - `bake.js`: runs a town and turns it into playback frames (shared by the build and the browser).
 - `build-site.js`, `build-bundle.js`: the two build steps.
+- `divergence.js`: experiment. the first ballot where the friends term changes a vote, same seed, friends on and off.
 - `cf.js`, `fl.js`: experiments. `cf.js` compares the friends weight on votes and factions. `fl.js` looks for feedback loops in the vote.
 - `hunger.js`: experiment. how many residents are hungry, walking, or out of food, over 24 seeds.
 - `site/`: the page (`index.html`, `app.js`), the bundle, and the baked towns.
@@ -85,6 +88,16 @@ the first towns had two problems at once: food swung from about 1000 down to zer
   - decay half plus meal 0.7: 40%. decay half plus meal 1.0: 30%, shipped
 
 what was kept: food decays at half the old rate, and a meal restores a full point of food. what was rejected: interrupting plans to eat, and a second market on its own. the lesson was to measure what residents are doing before tuning supply. `hunger.js` reproduces the numbers.
+
+## where the friends term first changes a vote (M10)
+
+`divergence.js` runs one seed twice, with the friends weight at 0.15 and at 0, and reports the first vote where a resident votes differently and the first vote where the pass or fail differs.
+
+- seed 20261028, tick 90, the harvest festival: with friends on it passes 85 to 65. with friends off it fails 64 to 86. 21 residents change their vote, and the ones who change mostly had friends who all voted yes last time (for example 5 yes, 0 no).
+- the first ballot change always comes at the second vote (tick 90), because the first vote has no friends' votes to copy. that is why every seed has a ballot change: it is not a finding by itself.
+- over 200 seeds (`TM_SEEDS=200 node divergence.js`, about 45 s), 113 of 200 had a pass or fail that differed at some vote.
+
+what this does and does not show. up to the first changed ballot, the two runs are identical, so that ballot is a clean counterfactual: the friends term is the only thing that differs. after it, the runs share one random stream and the towns drift apart, so later differences mix the friends term with everything that followed. one seed is a case study, not proof that friends change real towns.
 
 ## what is not done yet
 
