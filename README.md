@@ -72,6 +72,20 @@ node build-bundle.js   # writes site/sim.bundle.js from the headless modules
 - `hunger.js`: experiment. how many residents are hungry, walking, or out of food, over 24 seeds.
 - `site/`: the page (`index.html`, `app.js`), the bundle, and the baked towns.
 
+## how the food balance got tuned
+
+the first towns had two problems at once: food swung from about 1000 down to zero, and most residents were hungry for most of the town.
+
+- **the stock swing (M8).** a whole town set out to farm on the same tick, so the stock overshot to about 900. then almost everyone was hungry, and nobody farmed for 240 ticks. now a hungry resident farms when the stock is low, a fed one rests when it is high, and the harvest tapers as the stores fill. over 24 seeds the stock after tick 50 went from 46 to 879 down to 41 to 335, with no zero-stock ticks.
+- **the hunger (M9).** the market is about 16 steps from a home, and one meal lasted about 20 ticks, so every trip started hungry. one change at a time, with the share of residents hungry after tick 50:
+  - full meal alone: 46%
+  - second market, nearest-market spots: 76% (the walk is not the whole story)
+  - hungry residents interrupt any plan to eat: worse, the stock hit zero 1685 times, so this was reverted
+  - decay 0.75x alone: 73%. decay half alone: 61%
+  - decay half plus meal 0.7: 40%. decay half plus meal 1.0: 30%, shipped
+
+what was kept: food decays at half the old rate, and a meal restores a full point of food. what was rejected: interrupting plans to eat, and a second market on its own. the lesson was to measure what residents are doing before tuning supply. `hunger.js` reproduces the numbers.
+
 ## what is not done yet
 
 - after tick 50, about 3 in 10 residents are hungry at any tick (was about 8 in 10 before M9). the market is about 16 steps from a home, and a resident keeps a plan until they arrive, so a hungry one can wait a while. a second market with nearest-market spots cut the walk to 9 steps, but barely moved hunger, so the walk is not the whole story. `hunger.js` measures it.
