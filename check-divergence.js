@@ -64,7 +64,7 @@ assert.strictEqual(again, out, 'the finder is deterministic');
 // 4. The page card quotes the same numbers (its 105-of-200 line comes from the batch run: TM_SEEDS=200 node divergence.js).
 // The tick 270 pair is from the child runs (TM_W_SOCIAL 0.15 and 0 on the README seed, ballots compared per vote).
 const page = fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf8');
-for (const s of ['83 yes, 67 no', '69 yes, 81 no', '14 residents vote differently', '105 of 200 seeds']) {
+for (const s of ['83 yes, 67 no', '69 yes, 81 no', '14 residents vote differently', '105 have a pass or fail difference']) {
   assert.ok(page.includes(s), `page card quotes "${s}"`);
 }
 
