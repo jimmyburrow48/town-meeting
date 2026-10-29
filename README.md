@@ -89,4 +89,4 @@ what was kept: food decays at half the old rate, and a meal restores a full poin
 ## what is not done yet
 
 - after tick 50, about 3 in 10 residents are hungry at any tick (was about 8 in 10 before M9). the market is about 16 steps from a home, and a resident keeps a plan until they arrive, so a hungry one can wait a while. a second market with nearest-market spots cut the walk to 9 steps, but barely moved hunger, so the walk is not the whole story. `hunger.js` measures it.
-- the friends weight was picked by a sweep over 24 seeds (0.1, 0.15, 0.25, 0.5). 0.15 keeps a real friends effect without locking in lopsided votes. a bigger sample could move it.
+- the friends weight was picked by a sweep over 24 seeds (0.1, 0.15, 0.25, 0.5). 0.15 keeps a real friends effect without locking in lopsided votes. a bigger sample (200 seeds, `TM_SEEDS=200 node fl.js`) kept 0.15 in the middle, but it shrank the lock-in at 0.5: 34 of 200 towns end with a bloc under 10%, not 14 of 24. the trend is the same at every weight.

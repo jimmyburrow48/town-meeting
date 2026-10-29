@@ -1,12 +1,13 @@
 // Feedback-loop check: per vote, how many residents switch their vote, how many
 // of those come from the friends term, and what happens after a lopsided vote.
-// Run with: node fl.js. Each weight runs in its own process (W_SOCIAL is read at require time).
+// Run with: node fl.js (TM_SEEDS=200 node fl.js for a bigger sample; default 24). Each weight runs in its own process (W_SOCIAL is read at require time).
 const { execFileSync } = require('child_process');
 const path = require('path');
 
 if (process.argv[2] !== undefined) {
   const { createTown, step } = require('./core');
-  const SEEDS = Array.from({ length: 24 }, (_, i) => i + 1).map((i) => 20261028 + i * 97);
+  const N_SEEDS = Number(process.env.TM_SEEDS || 24);
+  const SEEDS = Array.from({ length: N_SEEDS }, (_, i) => i + 1).map((i) => 20261028 + i * 97);
   const TICKS = 300;
   let votes = 0, switches = 0, socialFlips = 0, sameAsPrev = 0, pairs = 0;
   let finalMin = [], lopsided = 0, nextMinority = 0, nextCount = 0, minorityTotal = 0, minorityN = 0;
