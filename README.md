@@ -69,9 +69,10 @@ node build-bundle.js   # writes site/sim.bundle.js from the headless modules
 - `bake.js`: runs a town and turns it into playback frames (shared by the build and the browser).
 - `build-site.js`, `build-bundle.js`: the two build steps.
 - `cf.js`, `fl.js`: experiments. `cf.js` compares the friends weight on votes and factions. `fl.js` looks for feedback loops in the vote.
+- `hunger.js`: experiment. how many residents are hungry, walking, or out of food, over 24 seeds.
 - `site/`: the page (`index.html`, `app.js`), the bundle, and the baked towns.
 
 ## what is not done yet
 
-- most residents are hungry most of the time. the stock now stays in a band (about 40 to 340 after the first 50 ticks), but the market walk is the real bottleneck, so the town is always a bit short of food. a fix would shorten the walk or slow the hunger.
+- after tick 50, about 3 in 10 residents are hungry at any tick (was about 8 in 10 before M9). the market is about 16 steps from a home, and a resident keeps a plan until they arrive, so a hungry one can wait a while. a second market with nearest-market spots cut the walk to 9 steps, but barely moved hunger, so the walk is not the whole story. `hunger.js` measures it.
 - the friends weight was picked by a sweep over 24 seeds (0.1, 0.15, 0.25, 0.5). 0.15 keeps a real friends effect without locking in lopsided votes. a bigger sample could move it.

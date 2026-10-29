@@ -107,7 +107,8 @@ function step(town) {
   // 1. Decay needs.
   for (const id of ids) {
     const r = town.residents.get(id);
-    r.needs.food = clamp(r.needs.food - (0.02 + rng() * 0.01));
+    // M9: hunger falls half as fast as in M1 to M8, so a meal lasts a whole walk.
+    r.needs.food = clamp(r.needs.food - (0.01 + rng() * 0.005));
     r.needs.rest = clamp(r.needs.rest - 0.03);
     r.needs.social = clamp(r.needs.social - 0.02);
   }
@@ -203,7 +204,8 @@ function step(town) {
     if (action === 'eat') {
       if (town.stock.food >= 1) {
         town.stock.food -= 1;
-        r.needs.food = clamp(r.needs.food + 0.5);
+        // M9: a full meal, not half. The walk to the market is about 16 steps each way.
+        r.needs.food = clamp(r.needs.food + 1.0);
       } else {
         // The stock ran out while this resident was walking.
         r.mood = clamp(r.mood - 0.05);
