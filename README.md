@@ -23,6 +23,8 @@ the chronicle is one line per event, in tick order. a line with a **because** cl
 
 > [270] The vote on "Tax the harvest" passes, 79 to 71. Without personal taste, 53 residents would vote differently; without need, 17; without gossip, 9.
 
+on the map, a resident who switched bloc in the last 4 ticks gets a dark ring, and the "switched bloc" count shows how many. at tick 150 of the hollow market town, six residents switch.
+
 the box "votes, laws and factions only" is on by default. it hides the daily hunger and trust lines, so the story is readable. uncheck it to see everything.
 
 ## the seed box
@@ -73,4 +75,3 @@ node build-bundle.js   # writes site/sim.bundle.js from the headless modules
 
 - the food stock swings a lot between boom and bust in some towns. it is a known balance issue, not a bug.
 - the friends weight was picked by a sweep over 24 seeds (0.1, 0.15, 0.25, 0.5). 0.15 keeps a real friends effect without locking in lopsided votes. a bigger sample could move it.
-- no vote-flip highlight on the map yet.
