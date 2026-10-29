@@ -5,6 +5,7 @@
 // With need fit 0 and noise 0, a resident's score is 0.4 * taste + W_SOCIAL (A) or 0.4 * taste - W_SOCIAL (B).
 // Part 2 runs divergence.js for real on the seed in the README and checks its report.
 const assert = require('assert');
+const fs = require('fs');
 const { execFileSync } = require('child_process');
 const path = require('path');
 const { createTown } = require('./core');
@@ -59,6 +60,12 @@ assert.ok(out.includes('friends on: 85 yes, 65 no (passes); friends off: 64 yes,
 assert.ok(out.includes('first outcome change: vote 1 at tick 90'), 'first outcome change on the README seed');
 const again = execFileSync(process.execPath, [path.join(__dirname, 'divergence.js'), String(SEED)]).toString();
 assert.strictEqual(again, out, 'the finder is deterministic');
+
+// 4. The page card quotes the same numbers (its 113-of-200 line comes from the batch run: TM_SEEDS=200 node divergence.js).
+const page = fs.readFileSync(path.join(__dirname, 'site', 'index.html'), 'utf8');
+for (const s of ['85 yes, 65 no', '64 yes, 86 no', '21 residents vote differently', '113 of 200 seeds']) {
+  assert.ok(page.includes(s), `page card quotes "${s}"`);
+}
 
 console.log('M10 divergence checks passed.');
 console.log(`fixture: ${flipped} residents flip to yes with friends on; no-friend run flips ${N.vote.effects.flips.social}.`);

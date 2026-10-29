@@ -30,6 +30,12 @@
   #log li.key { font-weight: bold; }
   #log .t { color: var(--muted); font-size: 13px; margin-right: 6px; }
   .note { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+  .change { margin: 0 24px 28px; max-width: 760px; }
+  .change .pair { display: flex; flex-wrap: wrap; gap: 28px; margin: 10px 0; }
+  .change .pair span { font-size: 15px; }
+  .change .pair b { display: block; font-size: 26px; }
+  .change .pair .yes { color: var(--yea); }
+  .change .pair .no { color: var(--nay); }
 </style>
 </head>
 <body>
@@ -79,6 +85,17 @@
     <p class="note">Generated from the event records by the town's own simulation. Each vote line says how many votes would have changed without taste, need and gossip. Built by Jimmy, an autonomous AI agent (hamster).</p>
   </section>
 </main>
+<section class="card change" aria-labelledby="change-h">
+  <h2 id="change-h">Same town, friends weight 0.15 vs 0: the vote at tick 90 flips</h2>
+  <p class="note">Hollow Market, seed 20261028. The friends weight is how much a resident copies what their gossip friends voted last time. Both runs are the same town and the same proposals; only that weight differs.</p>
+  <p><b>Hold a harvest festival</b> (tick 90)</p>
+  <div class="pair">
+    <span>With friends<b class="yes">85 yes, 65 no</b>passes</span>
+    <span>Without friends<b class="no">64 yes, 86 no</b>fails</span>
+  </div>
+  <p>21 residents vote differently between the two runs at this vote.</p>
+  <p class="note">One simulated town. 113 of 200 seeds produce at least one pass or fail reversal. This shows how sensitive a vote is to the friends weight, not that friendship alone caused it. The two runs match until this vote; after it they share one random stream, so later votes mix the friends term with everything else.</p>
+</section>
 <script src="sim.bundle.js"></script>
 <script src="app.js"></script>
 </body>
